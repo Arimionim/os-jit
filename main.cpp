@@ -29,19 +29,19 @@ int main(int argc, char ** argv) {
     void* data = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
 
-    if (memory == MAP_FAILED) {
-        print_error("can't allocate memory");
+    if (data == MAP_FAILED) {
+        print_error("can't allocate data");
         return EXIT_FAILURE;
     }
 
-    memcpy(memory, code, size);
+    memcpy(data, code, size);
 
 
-    int result = mprotect(memory, size, PROT_READ | PROT_EXEC);
+    int result = mprotect(data, size, PROT_READ | PROT_EXEC);
 
     if (result == CALL_FAILED) {
         print_error("can't make data executable");
-        munmap(memory, size);
+        munmap(data, size);
         return EXIT_FAILURE;
     }
 
@@ -49,11 +49,10 @@ int main(int argc, char ** argv) {
     int (*f)() = reinterpret_cast<int()>(data);
 
     std::cout << f() << std::endl;
-
-
-    int result = munmap(memory, size);
+    
+    int result = munmap(data, size);
     if (result == CALL_FAILED) {
-        print_error("can't deallocate memory");
+        print_error("can't deallocate data");
         return EXIT_FAILURE;
     }
 
