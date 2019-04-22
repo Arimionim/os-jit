@@ -19,11 +19,10 @@ unsigned const char code[] = {
 static int const size = 11;
 
 void print_error(const char* reason) {
-    std::cerr << "hij: " << reason;
-    if (errno) {
-        std::cerr << ": " << strerror(errno);
+    std::err << "OS_jit: " + reason << std::endl;
+    if (errno){
+        std::err << "OS_jit: " + strerror(errno) << std::endl;
     }
-    std::cerr << std::endl;
 }
 
 int main(int argc, char ** argv) {
@@ -37,27 +36,27 @@ int main(int argc, char ** argv) {
 
     memcpy(memory, code, size);
 
-    {
-        int result = mprotect(memory, size, PROT_READ | PROT_EXEC);
 
-        if (result == CALL_FAILED) {
-            print_error("can't make data executable");
-            munmap(memory, size);
-            return EXIT_FAILURE;
-        }
+    int result = mprotect(memory, size, PROT_READ | PROT_EXEC);
+
+    if (result == CALL_FAILED) {
+        print_error("can't make data executable");
+        munmap(memory, size);
+        return EXIT_FAILURE;
     }
 
-    func f = (func)memory;
+
+    int (*f)() = reinterpret_cast<int()>(data);
 
     std::cout << f() << std::endl;
 
-    {
-        int result = munmap(memory, size);
-        if (result == CALL_FAILED) {
-            print_error("can't deallocate memory");
-            return EXIT_FAILURE;
-        }
+
+    int result = munmap(memory, size);
+    if (result == CALL_FAILED) {
+        print_error("can't deallocate memory");
+        return EXIT_FAILURE;
     }
+
 
     return EXIT_SUCCESS;
 }
