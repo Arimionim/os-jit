@@ -1,6 +1,6 @@
 #include <iostream>
 #include <sys/mman.h>
-
+#include <cstring>
 
 /*
  * int zero(){
@@ -15,12 +15,13 @@ unsigned const char code[] = {
         0xc3                           // ret
 };
 
+static int const CALL_FAILED = -1;
 static int const size = 11;
 
 void print_error(std::string const & reason) {
-    std::err << "OS_jit: " + reason << std::endl;
+    std::cerr << "OS_jit: " + reason << std::endl;
     if (errno){
-        std::err << "OS_jit: " + strerror(errno) << std::endl;
+        std::cerr << "OS_jit: " << strerror(errno) << std::endl;
     }
 }
 
@@ -50,7 +51,7 @@ int main(int argc, char ** argv) {
         return EXIT_FAILURE;
     }
 
-    memcpy(data, code, size);
+    std::memcpy(data, code, size);
 
     int result = mprotect(data, size, PROT_READ | PROT_EXEC);
 
@@ -59,7 +60,7 @@ int main(int argc, char ** argv) {
         return EXIT_FAILURE;
     }
 
-    std::cout << reinterpret_cast<int(*)()>(data) << std::endl;
+    std::cout << reinterpret_cast<int(*)()>(data)() << std::endl;
 
-    return clearData(data);;
+    return clearData(data);
 }
